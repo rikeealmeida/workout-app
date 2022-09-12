@@ -1,10 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:workout_app/models/user_model.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:workout_app/services/auth_service.dart';
+import 'package:workout_app/views/bar_chart.dart';
 import 'package:workout_app/views/create_user.dart';
-import 'package:workout_app/views/tabs/home_tab.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,12 +19,12 @@ class _HomePageState extends State<HomePage> {
   final authService = AuthService();
   int selectedIndex = 0;
   final firebaseUser = FirebaseAuth.instance.currentUser;
+  String _infoText = '';
 
   var uuid;
   Future checkRegistry() async {
-    final uid = FirebaseFirestore.instance
-        .collection("users")
-        .doc(FirebaseAuth.instance.currentUser?.uid);
+    final uid =
+        FirebaseFirestore.instance.collection("users").doc(firebaseUser!.uid);
     final docSnap = await uid.get();
     setState(() {
       uuid = docSnap.data();
@@ -39,20 +40,11 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: selectedIndex,
-        onTap: (index) {
-          setState(() {
-            selectedIndex = index;
-          });
-          _pageController.animateToPage(index,
-              duration: Duration(milliseconds: 200), curve: Curves.easeIn);
-        },
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Add Registry'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'User')
-        ],
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.white,
+        onPressed: () {},
+        child: Icon(Icons.add, color: Colors.purple),
+        tooltip: 'Add Registry',
       ),
       appBar: AppBar(
         elevation: 0,
@@ -90,7 +82,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               Container(
                 width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height / 5,
+                // height: MediaQuery.of(context).size.height / 5,
                 decoration: BoxDecoration(
                     boxShadow: [
                       BoxShadow(
@@ -168,7 +160,27 @@ class _HomePageState extends State<HomePage> {
                                 children: [
                                   Padding(
                                     padding: EdgeInsets.all(15),
-                                    child: CircleAvatar(radius: 60),
+                                    child: Container(
+                                      height: 120,
+                                      width: 120,
+                                      decoration: BoxDecoration(
+                                          color: Colors.purple.shade800,
+                                          borderRadius:
+                                              BorderRadius.circular(100)),
+                                      child: snapshot.data!['imageUrl'] != ''
+                                          ? ClipRRect(
+                                              child: Image.network(
+                                                snapshot.data!['imageUrl'],
+                                                fit: BoxFit.cover,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(100),
+                                            )
+                                          : Icon(
+                                              Icons.person,
+                                              size: 30,
+                                            ),
+                                    ),
                                   ),
                                   Column(
                                     crossAxisAlignment:
@@ -196,9 +208,44 @@ class _HomePageState extends State<HomePage> {
                                       ),
                                       SizedBox(height: 10),
                                     ],
-                                  )
+                                  ),
                                 ],
                               ),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                InkWell(
+                                  onTap: () {
+                                    Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                      builder: (context) => CreateUser(),
+                                    ));
+                                  },
+                                  child: Container(
+                                    margin:
+                                        EdgeInsets.only(right: 20, bottom: 10),
+                                    padding: EdgeInsets.all(3),
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(5)),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.edit,
+                                          color: Colors.purple,
+                                          size: 18,
+                                        ),
+                                        SizedBox(width: 3),
+                                        Text('Editar',
+                                            style: TextStyle(
+                                                fontSize: 15,
+                                                color: Colors.purple)),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              ],
                             )
                           ],
                         );
@@ -207,20 +254,87 @@ class _HomePageState extends State<HomePage> {
               ),
               SizedBox(height: 10),
               Expanded(
-                  child: PageView(
-                onPageChanged: (v) {
-                  setState(() {
-                    selectedIndex = v;
-                  });
-                },
-                controller: _pageController,
+                  child: ListView(
                 children: [
-                  HomeTab(),
                   Container(
-                    color: Colors.black,
+                    margin: EdgeInsets.symmetric(vertical: 10),
+                    height: 200,
+                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.purple,
+                    ),
+                    child: StreamBuilder<DocumentSnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection("users")
+                            .doc(firebaseUser!.uid)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (snapshot.data?.data() == null) {
+                            return Center();
+                          }
+                          if (snapshot.hasError) {
+                            return const Text('Algo errado!');
+                          } else if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(
+                              child: Container(
+                                height: 100,
+                                width: 100,
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          } else {
+                            double weight = snapshot.data!['weight'];
+                            double height = snapshot.data!['height'] / 100;
+                            double imc = weight / (height * height);
+                            if (imc < 18.6) {
+                              _infoText = "Abaixo do Peso";
+                            } else if (imc >= 18.6 && imc < 24.9) {
+                              _infoText = "Peso Ideal)";
+                            } else if (imc >= 24.9 && imc < 29.9) {
+                              _infoText = "Levemente Acima do Peso";
+                            } else if (imc >= 29.9 && imc < 34.9) {
+                              _infoText = "Obesidade Grau I";
+                            } else if (imc >= 34.9 && imc < 39.9) {
+                              _infoText = "Obesidade Grau II";
+                            } else if (imc >= 40) {
+                              _infoText = "Obesidade Grau III";
+                            }
+
+                            return Container(
+                              padding: EdgeInsets.symmetric(horizontal: 10),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'IMC: ${imc.toStringAsPrecision(4)}',
+                                    style: TextStyle(
+                                        fontSize: 25, color: Colors.white),
+                                  ),
+                                  SizedBox(height: 20),
+                                  Text(
+                                    _infoText,
+                                    style: TextStyle(
+                                      fontSize: 25,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                        }),
                   ),
                   Container(
-                    color: Colors.white,
+                    margin: EdgeInsets.symmetric(vertical: 10),
+                    height: 300,
+                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: BarChartSample1(),
                   ),
                 ],
               ))

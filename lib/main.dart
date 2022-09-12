@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:workout_app/services/auth_service.dart';
+import 'package:workout_app/views/bar_chart.dart';
 import 'package:workout_app/widgets/auth_check.dart';
 
 void main() async {

@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:workout_app/services/auth_service.dart';
-import 'package:workout_app/views/create_user.dart';
 import 'package:workout_app/views/home_page.dart';
 import 'package:workout_app/views/login_page.dart';
 
@@ -29,7 +28,7 @@ class _AuthCheckState extends State<AuthCheck> {
     } else if (auth.firebaseUser == null) {
       return const LoginPage();
     } else {
-      return HomePage();
+      return const HomePage();
     }
   }
 

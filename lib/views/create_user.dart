@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:workout_app/services/auth_service.dart';
 import 'package:workout_app/views/home_page.dart';
 import 'package:workout_app/widgets/custom_textfield.dart';
@@ -22,6 +26,8 @@ class _CreateUserState extends State<CreateUser> {
   final _formKey = GlobalKey<FormState>();
   final firebaseUser = FirebaseAuth.instance.currentUser;
   final authService = AuthService();
+  DateTime _selectedDate = DateTime.now();
+  bool isImagePicked = false;
 
   bool loading = false;
 
@@ -39,6 +45,60 @@ class _CreateUserState extends State<CreateUser> {
     _heightController.dispose();
     super.dispose();
   }
+
+  XFile? _image;
+
+  File? file;
+
+  String downloadUrl = '';
+
+  Future getImage() async {
+    ImagePicker picker = ImagePicker();
+
+    _image = await picker.pickImage(source: ImageSource.gallery);
+
+    setState(() {
+      if (_image != null) {
+        setState(() {
+          isImagePicked = true;
+        });
+        file = File(_image!.path);
+        uploadFile();
+      } else {
+        setState(() {
+          isImagePicked = false;
+        });
+      }
+    });
+  }
+
+  Future<void> uploadFile() async {
+    UploadTask uploadTask = FirebaseStorage.instance
+        .ref()
+        .child('userImages')
+        .child(firebaseUser!.uid)
+        .putFile(file!);
+
+    TaskSnapshot s = await uploadTask;
+    downloadUrl = await s.ref.getDownloadURL();
+    setState(() {});
+  }
+
+  // _showDatePicker() {
+  //   showDatePicker(
+  //     context: context,
+  //     initialDate: DateTime.now(),
+  //     firstDate: DateTime(2020),
+  //     lastDate: DateTime.now(),
+  //   ).then((pickedDate) {
+  //     if (pickedDate == null) {
+  //       return;
+  //     }
+  //     setState(() {
+  //       _selectedDate = pickedDate;
+  //     });
+  //   });
+  // }
 
   Future<void> save(Map<String, dynamic> userData) async {
     setState(() => loading = true);
@@ -58,8 +118,7 @@ class _CreateUserState extends State<CreateUser> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Concluir Cadastro'),
-        centerTitle: false,
+        title: Text('Cadastro'),
         actions: [
           InkWell(
             onTap: () {
@@ -90,15 +149,41 @@ class _CreateUserState extends State<CreateUser> {
             key: _formKey,
             child: ListView(
               children: [
-                CircleAvatar(
-                  radius: 100,
+                InkWell(
+                  onTap: () {
+                    getImage();
+                  },
                   child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.image, size: 50),
-                        Text('Escolha uma imagem')
-                      ],
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.purple,
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      height: 200,
+                      width: 200,
+                      child: isImagePicked
+                          ? ClipRRect(
+                              child: downloadUrl == ''
+                                  ? Center(
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : Image.network(
+                                      downloadUrl,
+                                      fit: BoxFit.cover,
+                                    ),
+                              borderRadius: BorderRadius.circular(100),
+                            )
+                          : Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.image, size: 50),
+                                  Text('Escolha uma imagem')
+                                ],
+                              ),
+                            ),
                     ),
                   ),
                 ),
@@ -156,8 +241,10 @@ class _CreateUserState extends State<CreateUser> {
                 SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
+                    if (_formKey.currentState!.validate() &&
+                        (isImagePicked == true)) {
                       Map<String, dynamic> userData = {
+                        "imageUrl": downloadUrl,
                         "firstName": _firstNameController.text,
                         "lastName": _lastNameController.text,
                         "age": int.parse(_ageController.text),

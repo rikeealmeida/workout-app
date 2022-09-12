@@ -1,9 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:workout_app/models/user_model.dart';
 import 'package:workout_app/services/auth_service.dart';
-// import 'package:workout_app/views/register_page.dart';
 import 'package:workout_app/widgets/custom_textfield.dart';
 
 class LoginPage extends StatefulWidget {
@@ -15,8 +12,6 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final authService = AuthService();
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final formKey = GlobalKey<FormState>();
