@@ -164,65 +164,69 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsets.all(15),
-                                    child: Container(
-                                      height: 120,
-                                      width: 120,
-                                      decoration: BoxDecoration(
-                                          color: Colors.purple.shade800,
-                                          borderRadius:
-                                              BorderRadius.circular(100)),
-                                      child: user.imageUrl != ''
-                                          ? ClipRRect(
-                                              child: Image.network(
-                                                user.imageUrl!,
-                                                fit: BoxFit.cover,
+                              child: Container(
+                                width: MediaQuery.of(context).size.width,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsets.all(15),
+                                      child: Container(
+                                        height: 120,
+                                        width: 120,
+                                        decoration: BoxDecoration(
+                                            color: Colors.purple.shade800,
+                                            borderRadius:
+                                                BorderRadius.circular(100)),
+                                        child: user.imageUrl != ''
+                                            ? ClipRRect(
+                                                child: Image.network(
+                                                  user.imageUrl!,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(100),
+                                              )
+                                            : Icon(
+                                                Icons.person,
+                                                size: 30,
                                               ),
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                            )
-                                          : Icon(
-                                              Icons.person,
-                                              size: 30,
-                                            ),
+                                      ),
                                     ),
-                                  ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      CustomDataField(
-                                        field: 'Nome',
-                                        data:
-                                            "${user.firstName} ${user.lastName}",
-                                      ),
-                                      SizedBox(height: 10),
-                                      CustomDataField(
-                                        field: 'Idade',
-                                        data: '${user.age} anos',
-                                      ),
-                                      SizedBox(height: 10),
-                                      CustomDataField(
-                                        field: 'Peso',
-                                        data: '${user.weight} kg',
-                                      ),
-                                      SizedBox(height: 10),
-                                      CustomDataField(
-                                        field: 'Altura',
-                                        data: '${user.height} cm',
-                                      ),
-                                      SizedBox(height: 10),
-                                      CustomDataField(
-                                          field: 'IMC',
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        CustomDataField(
+                                          field: 'Nome',
                                           data:
-                                              '${imc.toStringAsPrecision(4)}'),
-                                      SizedBox(height: 10),
-                                    ],
-                                  ),
-                                ],
+                                              "${user.firstName} ${user.lastName}",
+                                        ),
+                                        SizedBox(height: 10),
+                                        CustomDataField(
+                                          field: 'Idade',
+                                          data: '${user.age} anos',
+                                        ),
+                                        SizedBox(height: 10),
+                                        CustomDataField(
+                                          field: 'Peso',
+                                          data: '${user.weight} kg',
+                                        ),
+                                        SizedBox(height: 10),
+                                        CustomDataField(
+                                          field: 'Altura',
+                                          data: '${user.height} cm',
+                                        ),
+                                        SizedBox(height: 10),
+                                        CustomDataField(
+                                            field: 'IMC',
+                                            data:
+                                                '${imc.toStringAsPrecision(4)}'),
+                                        SizedBox(height: 10),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                             Divider(
