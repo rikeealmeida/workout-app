@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:workout_app/models/user_model.dart';
 import 'package:workout_app/services/auth_service.dart';
 import 'package:workout_app/views/bar_chart.dart';
 import 'package:workout_app/views/create_user.dart';
+import 'package:workout_app/views/edit_user.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -40,6 +40,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.purple,
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.white,
         onPressed: () {},
@@ -77,23 +78,15 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Center(
         child: Container(
-          decoration: BoxDecoration(color: Colors.purple.withOpacity(.5)),
+          decoration: BoxDecoration(
+            color: Colors.purple.withOpacity(.5),
+          ),
           child: Column(
             children: [
               Container(
                 width: MediaQuery.of(context).size.width,
                 // height: MediaQuery.of(context).size.height / 5,
-                decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                          color: Colors.black.withOpacity(.8),
-                          blurRadius: 10,
-                          offset: const Offset(0, 1))
-                    ],
-                    color: Colors.purple,
-                    borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(25),
-                        bottomRight: Radius.circular(25))),
+                decoration: BoxDecoration(color: Colors.purple),
                 child: StreamBuilder<DocumentSnapshot>(
                     stream: FirebaseFirestore.instance
                         .collection("users")
@@ -117,8 +110,7 @@ class _HomePageState extends State<HomePage> {
                                     const EdgeInsets.symmetric(vertical: 20),
                                 child: InkWell(
                                   onTap: () {
-                                    Navigator.push(
-                                      context,
+                                    Navigator.of(context).push(
                                       MaterialPageRoute(
                                           builder: (context) => CreateUser()),
                                     );
@@ -152,6 +144,23 @@ class _HomePageState extends State<HomePage> {
                           ),
                         );
                       } else {
+                        UserModel user = UserModel.fromDocument(snapshot.data!);
+                        double weight = user.weight!;
+                        double height = user.height! / 100;
+                        double imc = weight / (height * height);
+                        if (imc < 18.6) {
+                          _infoText = "Abaixo do Peso";
+                        } else if (imc >= 18.6 && imc < 24.9) {
+                          _infoText = "Peso Ideal)";
+                        } else if (imc >= 24.9 && imc < 29.9) {
+                          _infoText = "Levemente Acima do Peso";
+                        } else if (imc >= 29.9 && imc < 34.9) {
+                          _infoText = "Obesidade Grau I";
+                        } else if (imc >= 34.9 && imc < 39.9) {
+                          _infoText = "Obesidade Grau II";
+                        } else if (imc >= 40) {
+                          _infoText = "Obesidade Grau III";
+                        }
                         return Column(
                           children: [
                             SingleChildScrollView(
@@ -167,10 +176,10 @@ class _HomePageState extends State<HomePage> {
                                           color: Colors.purple.shade800,
                                           borderRadius:
                                               BorderRadius.circular(100)),
-                                      child: snapshot.data!['imageUrl'] != ''
+                                      child: user.imageUrl != ''
                                           ? ClipRRect(
                                               child: Image.network(
-                                                snapshot.data!['imageUrl'],
+                                                user.imageUrl!,
                                                 fit: BoxFit.cover,
                                               ),
                                               borderRadius:
@@ -189,63 +198,80 @@ class _HomePageState extends State<HomePage> {
                                       CustomDataField(
                                         field: 'Nome',
                                         data:
-                                            "${snapshot.data!['firstName']} ${snapshot.data!['lastName']}",
+                                            "${user.firstName} ${user.lastName}",
                                       ),
                                       SizedBox(height: 10),
                                       CustomDataField(
                                         field: 'Idade',
-                                        data: '${snapshot.data!['age']} anos',
+                                        data: '${user.age} anos',
                                       ),
                                       SizedBox(height: 10),
                                       CustomDataField(
                                         field: 'Peso',
-                                        data: '${snapshot.data!['weight']} kg',
+                                        data: '${user.weight} kg',
                                       ),
                                       SizedBox(height: 10),
                                       CustomDataField(
                                         field: 'Altura',
-                                        data: '${snapshot.data!['height']} cm',
+                                        data: '${user.height} cm',
                                       ),
+                                      SizedBox(height: 10),
+                                      CustomDataField(
+                                          field: 'IMC',
+                                          data:
+                                              '${imc.toStringAsPrecision(4)}'),
                                       SizedBox(height: 10),
                                     ],
                                   ),
                                 ],
                               ),
                             ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                InkWell(
-                                  onTap: () {
-                                    Navigator.of(context)
-                                        .push(MaterialPageRoute(
-                                      builder: (context) => CreateUser(),
-                                    ));
-                                  },
-                                  child: Container(
-                                    margin:
-                                        EdgeInsets.only(right: 20, bottom: 10),
-                                    padding: EdgeInsets.all(3),
-                                    decoration: BoxDecoration(
+                            Divider(
+                              color: Colors.white,
+                              thickness: 2,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 5),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                children: [
+                                  Text(
+                                    "${_infoText}!",
+                                    style: TextStyle(
+                                        fontSize: 20,
                                         color: Colors.white,
-                                        borderRadius: BorderRadius.circular(5)),
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.edit,
-                                          color: Colors.purple,
-                                          size: 18,
-                                        ),
-                                        SizedBox(width: 3),
-                                        Text('Editar',
-                                            style: TextStyle(
-                                                fontSize: 15,
-                                                color: Colors.purple)),
-                                      ],
-                                    ),
+                                        fontWeight: FontWeight.bold),
                                   ),
-                                )
-                              ],
+                                  InkWell(
+                                    onTap: () {
+                                      Navigator.of(context)
+                                          .push(MaterialPageRoute(
+                                        builder: (context) => const EditUser(),
+                                      ));
+                                    },
+                                    child: Container(
+                                      padding: EdgeInsets.all(5),
+                                      decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(5)),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.edit,
+                                            color: Colors.purple,
+                                            size: 18,
+                                          ),
+                                          SizedBox(width: 3),
+                                          Text('Editar dados',
+                                              style: TextStyle(
+                                                  fontSize: 15,
+                                                  color: Colors.purple)),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
                             )
                           ],
                         );
@@ -254,90 +280,83 @@ class _HomePageState extends State<HomePage> {
               ),
               SizedBox(height: 10),
               Expanded(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius:
+                          BorderRadius.only(topRight: Radius.circular(30))),
                   child: ListView(
-                children: [
-                  Container(
-                    margin: EdgeInsets.symmetric(vertical: 10),
-                    height: 200,
-                    width: MediaQuery.of(context).size.width,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.purple,
-                    ),
-                    child: StreamBuilder<DocumentSnapshot>(
-                        stream: FirebaseFirestore.instance
-                            .collection("users")
-                            .doc(firebaseUser!.uid)
-                            .snapshots(),
-                        builder: (context, snapshot) {
-                          if (snapshot.data?.data() == null) {
-                            return Center();
-                          }
-                          if (snapshot.hasError) {
-                            return const Text('Algo errado!');
-                          } else if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return Center(
-                              child: Container(
-                                height: 100,
-                                width: 100,
-                                child: CircularProgressIndicator(),
-                              ),
-                            );
-                          } else {
-                            double weight = snapshot.data!['weight'];
-                            double height = snapshot.data!['height'] / 100;
-                            double imc = weight / (height * height);
-                            if (imc < 18.6) {
-                              _infoText = "Abaixo do Peso";
-                            } else if (imc >= 18.6 && imc < 24.9) {
-                              _infoText = "Peso Ideal)";
-                            } else if (imc >= 24.9 && imc < 29.9) {
-                              _infoText = "Levemente Acima do Peso";
-                            } else if (imc >= 29.9 && imc < 34.9) {
-                              _infoText = "Obesidade Grau I";
-                            } else if (imc >= 34.9 && imc < 39.9) {
-                              _infoText = "Obesidade Grau II";
-                            } else if (imc >= 40) {
-                              _infoText = "Obesidade Grau III";
-                            }
-
-                            return Container(
-                              padding: EdgeInsets.symmetric(horizontal: 10),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'IMC: ${imc.toStringAsPrecision(4)}',
-                                    style: TextStyle(
-                                        fontSize: 25, color: Colors.white),
-                                  ),
-                                  SizedBox(height: 20),
-                                  Text(
-                                    _infoText,
-                                    style: TextStyle(
-                                      fontSize: 25,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
-                        }),
+                    shrinkWrap: true,
+                    children: [
+                      // Container(
+                      //   margin: EdgeInsets.symmetric(vertical: 10),
+                      //   height: 200,
+                      //   width: MediaQuery.of(context).size.width,
+                      //   decoration: BoxDecoration(
+                      //     borderRadius: BorderRadius.circular(10),
+                      //     color: Colors.purple,
+                      //   ),
+                      //   child: StreamBuilder<DocumentSnapshot>(
+                      //       stream: FirebaseFirestore.instance
+                      //           .collection("users")
+                      //           .doc(firebaseUser!.uid)
+                      //           .snapshots(),
+                      //       builder: (context, snapshot) {
+                      //         if (snapshot.data?.data() == null) {
+                      //           return Center();
+                      //         }
+                      //         if (snapshot.hasError) {
+                      //           return const Text('Algo errado!');
+                      //         } else if (snapshot.connectionState ==
+                      //             ConnectionState.waiting) {
+                      //           return Center(
+                      //             child: Container(
+                      //               height: 100,
+                      //               width: 100,
+                      //               child: CircularProgressIndicator(),
+                      //             ),
+                      //           );
+                      //         } else {
+                      //           return Container(
+                      //             padding: EdgeInsets.symmetric(horizontal: 10),
+                      //             child: Column(
+                      //               mainAxisAlignment: MainAxisAlignment.center,
+                      //               crossAxisAlignment:
+                      //                   CrossAxisAlignment.start,
+                      //               children: [
+                      //                 Text(
+                      //                   'IMC: ${imc.toStringAsPrecision(4)}',
+                      //                   style: TextStyle(
+                      //                       fontSize: 25, color: Colors.white),
+                      //                 ),
+                      //                 SizedBox(height: 20),
+                      //                 Text(
+                      //                   _infoText,
+                      //                   style: TextStyle(
+                      //                     fontSize: 25,
+                      //                     color: Colors.white,
+                      //                   ),
+                      //                 ),
+                      //               ],
+                      //             ),
+                      //           );
+                      //         }
+                      //       }),
+                      // ),
+                      Container(
+                        margin: EdgeInsets.symmetric(vertical: 10),
+                        height: 300,
+                        width: MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: BarChartSample1(),
+                      ),
+                    ],
                   ),
-                  Container(
-                    margin: EdgeInsets.symmetric(vertical: 10),
-                    height: 300,
-                    width: MediaQuery.of(context).size.width,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: BarChartSample1(),
-                  ),
-                ],
-              ))
+                ),
+              )
             ],
           ),
         ),

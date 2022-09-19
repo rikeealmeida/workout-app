@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:workout_app/services/auth_service.dart';
 import 'package:workout_app/views/home_page.dart';
@@ -26,7 +25,7 @@ class _CreateUserState extends State<CreateUser> {
   final _formKey = GlobalKey<FormState>();
   final firebaseUser = FirebaseAuth.instance.currentUser;
   final authService = AuthService();
-  DateTime _selectedDate = DateTime.now();
+  // DateTime _selectedDate = DateTime.now();
   bool isImagePicked = false;
 
   bool loading = false;
@@ -252,25 +251,25 @@ class _CreateUserState extends State<CreateUser> {
                         "height": double.parse(_heightController.text),
                       };
                       save(userData);
-                      Future.delayed(Duration(seconds: 1), () {
+                      Future.delayed(const Duration(seconds: 1), () {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => HomePage(),
+                            builder: (context) => const HomePage(),
                           ),
                         );
                       });
                     }
                   },
                   child: loading
-                      ? SizedBox(
+                      ? const SizedBox(
                           width: 24,
                           height: 24,
                           child: CircularProgressIndicator(
                             color: Colors.white,
                           ),
                         )
-                      : Text(
+                      : const Text(
                           'Salvar',
                           style: TextStyle(fontSize: 18),
                         ),
