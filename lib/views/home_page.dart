@@ -15,13 +15,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final _pageController = PageController();
   final authService = AuthService();
   int selectedIndex = 0;
   final firebaseUser = FirebaseAuth.instance.currentUser;
   String _infoText = '';
 
-  var uuid;
+  dynamic uuid;
   Future checkRegistry() async {
     final uid =
         FirebaseFirestore.instance.collection("users").doc(firebaseUser!.uid);
@@ -233,7 +232,8 @@ class _HomePageState extends State<HomePage> {
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 5),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
                                 children: [
                                   Text(
                                     "${_infoText}!",
@@ -253,7 +253,8 @@ class _HomePageState extends State<HomePage> {
                                       padding: EdgeInsets.all(5),
                                       decoration: BoxDecoration(
                                           color: Colors.white,
-                                          borderRadius: BorderRadius.circular(5)),
+                                          borderRadius:
+                                              BorderRadius.circular(5)),
                                       child: Row(
                                         children: [
                                           Icon(
@@ -289,61 +290,6 @@ class _HomePageState extends State<HomePage> {
                   child: ListView(
                     shrinkWrap: true,
                     children: [
-                      // Container(
-                      //   margin: EdgeInsets.symmetric(vertical: 10),
-                      //   height: 200,
-                      //   width: MediaQuery.of(context).size.width,
-                      //   decoration: BoxDecoration(
-                      //     borderRadius: BorderRadius.circular(10),
-                      //     color: Colors.purple,
-                      //   ),
-                      //   child: StreamBuilder<DocumentSnapshot>(
-                      //       stream: FirebaseFirestore.instance
-                      //           .collection("users")
-                      //           .doc(firebaseUser!.uid)
-                      //           .snapshots(),
-                      //       builder: (context, snapshot) {
-                      //         if (snapshot.data?.data() == null) {
-                      //           return Center();
-                      //         }
-                      //         if (snapshot.hasError) {
-                      //           return const Text('Algo errado!');
-                      //         } else if (snapshot.connectionState ==
-                      //             ConnectionState.waiting) {
-                      //           return Center(
-                      //             child: Container(
-                      //               height: 100,
-                      //               width: 100,
-                      //               child: CircularProgressIndicator(),
-                      //             ),
-                      //           );
-                      //         } else {
-                      //           return Container(
-                      //             padding: EdgeInsets.symmetric(horizontal: 10),
-                      //             child: Column(
-                      //               mainAxisAlignment: MainAxisAlignment.center,
-                      //               crossAxisAlignment:
-                      //                   CrossAxisAlignment.start,
-                      //               children: [
-                      //                 Text(
-                      //                   'IMC: ${imc.toStringAsPrecision(4)}',
-                      //                   style: TextStyle(
-                      //                       fontSize: 25, color: Colors.white),
-                      //                 ),
-                      //                 SizedBox(height: 20),
-                      //                 Text(
-                      //                   _infoText,
-                      //                   style: TextStyle(
-                      //                     fontSize: 25,
-                      //                     color: Colors.white,
-                      //                   ),
-                      //                 ),
-                      //               ],
-                      //             ),
-                      //           );
-                      //         }
-                      //       }),
-                      // ),
                       Container(
                         margin: EdgeInsets.symmetric(vertical: 10),
                         height: 300,
